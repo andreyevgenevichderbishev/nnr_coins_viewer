@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Информация о монетах</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    h1 { text-align: center; margin-top: 50px; }
+    /* Блок для отображения числа результатов в левом верхнем углу */
+    .results-count {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      z-index: 100;
+    }
+    /* Стили для строки поиска */
+    .search-container {
+      width: 90%;
+      margin: 20px auto;
+      text-align: center;
+    }
+    .search-container input[type="text"] {
+      width: 300px;
+      padding: 8px;
+      font-size: 16px;
+    }
+    .search-container button {
+      padding: 8px 16px;
+      font-size: 16px;
+    }
+    /* Контейнер таблицы со скроллингом */
+    .table-container {
+      width: 90%;
+      margin: 20px auto;
+      border: 1px solid #ccc;
+      padding: 5px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      background-color: #f2f2f2;
+      position: sticky;
+      top: 0;
+      padding: 8px;
+      border: 1px solid #ddd;
+      cursor: pointer;
+      z-index: 100; /* Заголовок всегда поверх всплывающих изображений */
+    }
+    tbody td {
+      text-align: center;
+      padding: 8px;
+      border: 1px solid #ddd;
+    }
+    /* Стили для изображений */
+    .img-container {
+      position: relative;
+      display: inline-block;
+    }
+    .img-container .full-size {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 105%;
+      z-index: 10;
+      border: 1px solid #ccc;
+      background: white;
+    }
+    .img-container:hover .full-size {
+      display: block;
+    }
+    img.thumbnail {
+      max-width: 100px;
+      max-height: 100px;
+    }
+    img.full {
+      max-width: 400px;
+      max-height: 400px;
+    }
+    a.sort-link {
+      text-decoration: none;
+      color: inherit;
+    }
+  </style>
+</head>
+<body>
+  <!-- Блок с числом найденных результатов -->
+  <div class="results-count">
+    Найдено результатов: {{ total_count }}
+  </div>
+
+  <!-- Форма поиска -->
+  <div class="search-container">
+    <form action="{{ url_for('index') }}" method="get">
+      <input type="text" name="q" placeholder="Поиск..." value="{{ q }}">
+      {% if sort_by %}
+        <input type="hidden" name="sort_by" value="{{ sort_by }}">
+      {% endif %}
+      {% if order %}
+        <input type="hidden" name="order" value="{{ order }}">
+      {% endif %}
+      <button type="submit">Найти</button>
+    </form>
+  </div>
+
+  <!-- Таблица с данными внутри скроллируемого контейнера -->
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>
+            {% set new_order = 'asc' %}
+            {% if sort_by == 'number' and order == 'asc' %}
+              {% set new_order = 'desc' %}
+            {% elif sort_by == 'number' and order == 'desc' %}
+              {% set new_order = 'asc' %}
+            {% endif %}
+            <a class="sort-link" href="{{ url_for('index', q=q, sort_by='number', order=new_order) }}">
+              Number
+              {% if sort_by == 'number' %}
+                {% if order == 'asc' %}▲{% else %}▼{% endif %}
+              {% endif %}
+            </a>
+          </th>
+	  <th>Revers</th>
+          <th>Avers</th>
+          <th>Weight</th>
+          <th>
+            {% set new_order = 'asc' %}
+            {% if sort_by == 'year' and order == 'asc' %}
+              {% set new_order = 'desc' %}
+            {% elif sort_by == 'year' and order == 'desc' %}
+              {% set new_order = 'asc' %}
+            {% endif %}
+            <a class="sort-link" href="{{ url_for('index', q=q, sort_by='year', order=new_order) }}">
+              Year
+              {% if sort_by == 'year' %}
+                {% if order == 'asc' %}▲{% else %}▼{% endif %}
+              {% endif %}
+            </a>
+          </th>
+          <th>
+            {% set new_order = 'asc' %}
+            {% if sort_by == 'condition' and order == 'asc' %}
+              {% set new_order = 'desc' %}
+            {% elif sort_by == 'condition' and order == 'desc' %}
+              {% set new_order = 'asc' %}
+            {% endif %}
+            <a class="sort-link" href="{{ url_for('index', q=q, sort_by='condition', order=new_order) }}">
+              Condition
+              {% if sort_by == 'condition' %}
+                {% if order == 'asc' %}▲{% else %}▼{% endif %}
+              {% endif %}
+            </a>
+          </th>
+          <th>Value</th>
+          <th>Text</th>
+        </tr>
+      </thead>
+      <tbody id="coin-table-body">
+        {% for coin in coins %}
+        <tr>
+          <td>{{ coin.number }}</td>
+          <td>
+            <div class="img-container">
+              <img class="thumbnail" src="{{ url_for('photos', filename=coin.revers) }}" alt="Revers">
+              <div class="full-size">
+                <img class="full" src="{{ url_for('photos', filename=coin.revers) }}" alt="Revers">
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="img-container">
+              <img class="thumbnail" src="{{ url_for('photos', filename=coin.avers) }}" alt="Avers">
+              <div class="full-size">
+                <img class="full" src="{{ url_for('photos', filename=coin.avers) }}" alt="Avers">
+              </div>
+            </div>
+          </td>
+	  <td>{{ coin.weight }}</td>
+          <td>{{ coin.year }}</td>
+          <td>{{ coin.condition }}</td>
+          <td>{{ coin.value }}</td>
+          <td>{{ coin.text }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Скрипт для динамической подгрузки данных (infinite scroll) -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const tableContainer = document.querySelector(".table-container");
+      const tableBody = document.getElementById("coin-table-body");
+      let currentPage = 1;
+      let loading = false;
+      let noMoreData = false;
+      
+      // Значения параметров поиска и сортировки, переданные из шаблона
+      const q = "{{ q }}";
+      const sortBy = "{{ sort_by }}";
+      const order = "{{ order }}";
+
+      tableContainer.addEventListener("scroll", function() {
+        if (loading || noMoreData) return;
+        // Если прокрутка достигла 90% от высоты контейнера, запускаем подгрузку
+        if (tableContainer.scrollTop + tableContainer.clientHeight >= tableContainer.scrollHeight - 50) {
+          loading = true;
+          currentPage++;
+          const url = "{{ url_for('get_coins') }}?page=" + currentPage +
+                      "&q=" + encodeURIComponent(q) +
+                      "&sort_by=" + encodeURIComponent(sortBy) +
+                      "&order=" + encodeURIComponent(order);
+          fetch(url)
+            .then(response => response.json())
+            .then(data => {
+              if (data.coins.length === 0) {
+                noMoreData = true;
+              } else {
+                data.coins.forEach(function(coin) {
+                  const row = document.createElement("tr");
+                  row.innerHTML = `
+                    <td>${coin.number}</td>
+                    <td>
+                      <div class="img-container">
+                        <img class="thumbnail" src="/photos/${coin.revers}" alt="Revers">
+                        <div class="full-size">
+                          <img class="full" src="/photos/${coin.revers}" alt="Revers">
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="img-container">
+                        <img class="thumbnail" src="/photos/${coin.avers}" alt="Avers">
+                        <div class="full-size">
+                          <img class="full" src="/photos/${coin.avers}" alt="Avers">
+                        </div>
+                      </div>
+                    </td>
+		    <td>${coin.weight}</td>
+                    <td>${coin.year}</td>
+                    <td>${coin.condition}</td>
+                    <td>${coin.value}</td>
+                    <td>${coin.text}</td>
+                  `;
+                  tableBody.appendChild(row);
+                });
+              }
+              loading = false;
+            })
+            .catch(err => {
+              console.error(err);
+              loading = false;
+            });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
