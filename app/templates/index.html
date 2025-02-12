@@ -165,20 +165,24 @@
       <tbody id="coin-table-body">
         {% for coin in coins %}
         <tr>
-          <td>{{ coin.number }}</td>
+	  <td>
+  	     <a href="https://nreestr.ru/coins/search/{{ coin.number }}" target="_blank">
+    	       {{ coin.number }}
+             </a>
+          </td>
           <td>
             <div class="img-container">
-              <img class="thumbnail" src="{{ url_for('photos', filename=coin.revers) }}" alt="Revers">
+              <img class="thumbnail" src="{{ url_for('photos', filename=coin.number+"r.jpg") }}" alt="Revers">
               <div class="full-size">
-                <img class="full" src="{{ url_for('photos', filename=coin.revers) }}" alt="Revers">
+                <img class="full" src="{{ url_for('photos', filename=coin.number+"r.jpg") }}" alt="Revers">
               </div>
             </div>
           </td>
           <td>
             <div class="img-container">
-              <img class="thumbnail" src="{{ url_for('photos', filename=coin.avers) }}" alt="Avers">
+              <img class="thumbnail" src="{{ url_for('photos', filename=coin.number+"a.jpg") }}" alt="Avers">
               <div class="full-size">
-                <img class="full" src="{{ url_for('photos', filename=coin.avers) }}" alt="Avers">
+                <img class="full" src="{{ url_for('photos', filename=coin.number+"a.jpg") }}" alt="Avers">
               </div>
             </div>
           </td>
@@ -226,20 +230,22 @@
                 data.coins.forEach(function(coin) {
                   const row = document.createElement("tr");
                   row.innerHTML = `
-                    <td>${coin.number}</td>
+                    <td>
+                    <a href="https://nreestr.ru/coins/search/${coin.number}" target="_blank">${coin.number}</a>
+                    </td>
                     <td>
                       <div class="img-container">
-                        <img class="thumbnail" src="/photos/${coin.revers}" alt="Revers">
+                        <img class="thumbnail" src="/photos/${coin.number}r.jpg" alt="Revers">
                         <div class="full-size">
-                          <img class="full" src="/photos/${coin.revers}" alt="Revers">
+                          <img class="full" src="/photos/${coin.number}r.jpg" alt="Revers">
                         </div>
                       </div>
                     </td>
                     <td>
                       <div class="img-container">
-                        <img class="thumbnail" src="/photos/${coin.avers}" alt="Avers">
+                        <img class="thumbnail" src="/photos/${coin.number}a.jpg" alt="Avers">
                         <div class="full-size">
-                          <img class="full" src="/photos/${coin.avers}" alt="Avers">
+                          <img class="full" src="/photos/${coin.number}a.jpg" alt="Avers">
                         </div>
                       </div>
                     </td>

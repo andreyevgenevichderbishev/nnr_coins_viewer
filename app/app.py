@@ -1,16 +1,7 @@
 import os
-import pandas as pd
 from flask import Flask, render_template, request, url_for, send_from_directory, jsonify,redirect
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import cast, String, or_ , case
-from tqdm import tqdm
-import re
-
-# Загрузка данных из CSV
-df = pd.read_csv('data/coins.csv')
-df['year'] = df['year'].str.replace(r'\D', '', regex=True)
-df.loc[df['year']=='','year']=0
-df['year']=df['year'].fillna(value=0)
 
 
 app = Flask(__name__) 
@@ -36,8 +27,6 @@ class Coin(db.Model):
     condition = db.Column(db.String)
     value = db.Column(db.String)
     text = db.Column('text', db.String)   # Имя столбца – text
-    revers = db.Column(db.String)
-    avers = db.Column(db.String)
 
     def to_dict(self):
         return {
@@ -46,37 +35,40 @@ class Coin(db.Model):
             "year": self.year,
             "condition": self.condition,
             "value": self.value,
-            "text": self.text,
-            "revers": self.revers,
-            "avers": self.avers
+            "text": self.text
         }
 
     def __repr__(self):
         return f'<Coin {self.number}>'
 
 
-def create_db():
+#def create_db():
     """
     Если файл coins.db отсутствует, создаём базу и заполняем её данными из DataFrame.
     В реальном приложении данные можно загрузить из CSV или другого источника.
     """
-    if not os.path.exists("instance\\coins.db"):
-        db.create_all()
+	
+    # Загрузка данных из CSV
+    #df = pd.read_csv('data/coins.csv')
+    #df['year'] = df['year'].str.replace(r'\D', '', regex=True)
+    #df.loc[df['year']=='','year']=0
+    #df['year']=df['year'].fillna(value=0)
+
+    #if not os.path.exists("instance\\coins.db"):
+    #    db.create_all()
         # Заполняем базу данных
-        for _, row in tqdm(df.iterrows(), ncols=80, ascii=True, desc='Total'):
-            coin = Coin(
-                number=row['number'],
-                weight=float(row['weight']),
-                year=int(row['year']),
-                condition=row['condition'],
-                value=row['value'],
-                text=row['text'],
-                revers=row['revers'],
-                avers=row['avers']
-            )
-            db.session.add(coin)
-        db.session.commit()
-        print("База данных создана и заполнена данными.")
+    #    for _, row in df.iterrows():
+    #        coin = Coin(
+    #            number=row['number'],
+    #            weight=float(row['weight']),
+    #            year=int(row['year']),
+    #            condition=row['condition'],
+    #            value=row['value'],
+    #            text=row['text']
+    #        )
+    #        db.session.add(coin)
+    #    db.session.commit()
+    #    print("База данных создана и заполнена данными.")
 
 def apply_filters_and_sort(coins_query, search_query, sort_by, order):
     """Применяет фильтрацию и сортировку к запросу с учетом пользовательского порядка для condition."""
@@ -273,4 +265,6 @@ def photos(filename):
     return redirect(remote_url)
 
 if __name__ == "__main__":
+    #with app.app_context():
+    #    create_db()
     app.run(host="0.0.0.0", port=5000, debug=False)
