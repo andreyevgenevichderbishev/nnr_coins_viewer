@@ -13,14 +13,17 @@ df.loc[df['year']=='','year']=0
 df['year']=df['year'].fillna(value=0)
 
 
-# Абсолютный путь к папке с фотографиями
-PHOTO_FOLDER = "D:\\Python\\coin_pages\\"
-PHOTO_BASE_URL="https://nreestr.ru/img/all/bpict"
-
 app = Flask(__name__) 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///coins.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Настройки базы данных (из переменных окружения)
+DB_PATH = os.getenv("DATABASE_URL", "sqlite:///coins.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = DB_PATH
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 db = SQLAlchemy(app)
+
+# Базовый URL для изображений
+PHOTO_BASE_URL = os.getenv("PHOTO_BASE_URL", "https://nreestr.ru/img/all/bpict")
 
 
 # Определяем модель (таблица coins)
@@ -57,7 +60,7 @@ def create_db():
     Если файл coins.db отсутствует, создаём базу и заполняем её данными из DataFrame.
     В реальном приложении данные можно загрузить из CSV или другого источника.
     """
-    if not os.path.exists("D:\\coin_base_app\\instance\\coins.db"):
+    if not os.path.exists("instance\\coins.db"):
         db.create_all()
         # Заполняем базу данных
         for _, row in tqdm(df.iterrows(), ncols=80, ascii=True, desc='Total'):
@@ -264,14 +267,10 @@ def get_coins():
 
 @app.route('/photos/<filename>')
 def photos(filename):
-    # Файлы изображений лежат в папке photos, которая расположена рядом с этим скриптом
-    #photos_path = PHOTO_FOLDER 
-    #return send_from_directory(photos_path, filename)
+    
     # Изображения на сайте ННР
     remote_url = f"{PHOTO_BASE_URL}/{filename}"
     return redirect(remote_url)
 
-if __name__ == '__main__':
-    with app.app_context():
-        create_db()
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=False)
