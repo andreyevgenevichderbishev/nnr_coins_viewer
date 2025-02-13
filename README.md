@@ -60,7 +60,7 @@
    ```bash	
    pip install -r requirements.txt
 
-3. **Установите зависимости:**
+3. **Запуск:**
    ```bash
    python app.py
 
