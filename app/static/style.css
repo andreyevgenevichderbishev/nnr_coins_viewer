@@ -1,8 +1,20 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+html,body {
+    height: 100%;
     margin: 0;
-    padding: 0;
+    overflow: hidden; /* Запрещаем прокрутку всей страницы */
+}
+
+.table-container {
+    height: calc(100vh - 120px); /* 100% высоты экрана минус отступы */
+    overflow-y: auto; /* Добавляем прокрутку */
+    border: 1px solid #ddd;
+}
+
+th {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
 }
 
 .container {

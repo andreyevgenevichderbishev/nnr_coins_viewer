@@ -223,7 +223,7 @@ def index():
     coins_query = Coin.query
     coins_query = apply_filters_and_sort(coins_query, search_query, sort_by, order)
 
-    PER_PAGE = 5  # Количество записей на одну порцию
+    PER_PAGE = 7  # Количество записей на одну порцию
     coins = coins_query.offset(0).limit(PER_PAGE).all()
     total_count = coins_query.count()  # Общее число записей, подходящих под фильтры
 

@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <title>Информация о монетах</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; overflow: hidden;}
     h1 { text-align: center; margin-top: 50px; }
     /* Блок для отображения числа результатов в левом верхнем углу */
     .results-count {
@@ -33,13 +33,15 @@
       padding: 8px 16px;
       font-size: 16px;
     }
-    /* Контейнер таблицы со скроллингом */
+    /* Контейнер таблицы со скроллингом, высота зависит от экрана */
     .table-container {
       width: 90%;
       margin: 20px auto;
       border: 1px solid #ccc;
       padding: 5px;
-      max-height: 600px;
+      /* Задаем высоту, вычитая из высоты экрана размеры других элементов.
+         Подберите значение (например, 200px), чтобы таблица занимала оставшееся пространство */
+      height: calc(100vh - 100px);
       overflow-y: auto;
     }
     table { width: 100%; border-collapse: collapse; }
@@ -127,7 +129,7 @@
               {% endif %}
             </a>
           </th>
-	  <th>Revers</th>
+          <th>Revers</th>
           <th>Avers</th>
           <th>Weight</th>
           <th>
@@ -165,28 +167,28 @@
       <tbody id="coin-table-body">
         {% for coin in coins %}
         <tr>
-	  <td>
-  	     <a href="https://nreestr.ru/coins/search/{{ coin.number }}" target="_blank">
-    	       {{ coin.number }}
+          <td>
+             <a href="https://nreestr.ru/coins/search/{{ coin.number }}" target="_blank">
+               {{ coin.number }}
              </a>
           </td>
           <td>
             <div class="img-container">
-              <img class="thumbnail" src="{{ url_for('photos', filename=coin.number+"r.jpg") }}" alt="Revers">
+              <img class="thumbnail" src="{{ url_for('photos', filename=coin.number ~ "r.jpg") }}" alt="Revers">
               <div class="full-size">
-                <img class="full" src="{{ url_for('photos', filename=coin.number+"r.jpg") }}" alt="Revers">
+                <img class="full" src="{{ url_for('photos', filename=coin.number ~ "r.jpg") }}" alt="Revers">
               </div>
             </div>
           </td>
           <td>
             <div class="img-container">
-              <img class="thumbnail" src="{{ url_for('photos', filename=coin.number+"a.jpg") }}" alt="Avers">
+              <img class="thumbnail" src="{{ url_for('photos', filename=coin.number ~ "a.jpg") }}" alt="Avers">
               <div class="full-size">
-                <img class="full" src="{{ url_for('photos', filename=coin.number+"a.jpg") }}" alt="Avers">
+                <img class="full" src="{{ url_for('photos', filename=coin.number ~ "a.jpg") }}" alt="Avers">
               </div>
             </div>
           </td>
-	  <td>{{ coin.weight }}</td>
+          <td>{{ coin.weight }}</td>
           <td>{{ coin.year }}</td>
           <td>{{ coin.condition }}</td>
           <td>{{ coin.value }}</td>
@@ -199,74 +201,86 @@
 
   <!-- Скрипт для динамической подгрузки данных (infinite scroll) -->
   <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const tableContainer = document.querySelector(".table-container");
-      const tableBody = document.getElementById("coin-table-body");
-      let currentPage = 1;
-      let loading = false;
-      let noMoreData = false;
-      
-      // Значения параметров поиска и сортировки, переданные из шаблона
-      const q = "{{ q }}";
-      const sortBy = "{{ sort_by }}";
-      const order = "{{ order }}";
+  document.addEventListener("DOMContentLoaded", function() {
+    const tableContainer = document.querySelector(".table-container");
+    const tableBody = document.getElementById("coin-table-body");
+    let currentPage = 1;
+    let loading = false;
+    let noMoreData = false;
+    
+    // Значения параметров поиска и сортировки, переданные из шаблона
+    const q = "{{ q }}";
+    const sortBy = "{{ sort_by }}";
+    const order = "{{ order }}";
 
-      tableContainer.addEventListener("scroll", function() {
-        if (loading || noMoreData) return;
-        // Если прокрутка достигла 90% от высоты контейнера, запускаем подгрузку
-        if (tableContainer.scrollTop + tableContainer.clientHeight >= tableContainer.scrollHeight - 50) {
-          loading = true;
-          currentPage++;
-          const url = "{{ url_for('get_coins') }}?page=" + currentPage +
-                      "&q=" + encodeURIComponent(q) +
-                      "&sort_by=" + encodeURIComponent(sortBy) +
-                      "&order=" + encodeURIComponent(order);
-          fetch(url)
-            .then(response => response.json())
-            .then(data => {
-              if (data.coins.length === 0) {
-                noMoreData = true;
-              } else {
-                data.coins.forEach(function(coin) {
-                  const row = document.createElement("tr");
-                  row.innerHTML = `
-                    <td>
-                    <a href="https://nreestr.ru/coins/search/${coin.number}" target="_blank">${coin.number}</a>
-                    </td>
-                    <td>
-                      <div class="img-container">
-                        <img class="thumbnail" src="/photos/${coin.number}r.jpg" alt="Revers">
-                        <div class="full-size">
-                          <img class="full" src="/photos/${coin.number}r.jpg" alt="Revers">
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="img-container">
-                        <img class="thumbnail" src="/photos/${coin.number}a.jpg" alt="Avers">
-                        <div class="full-size">
-                          <img class="full" src="/photos/${coin.number}a.jpg" alt="Avers">
-                        </div>
-                      </div>
-                    </td>
-		    <td>${coin.weight}</td>
-                    <td>${coin.year}</td>
-                    <td>${coin.condition}</td>
-                    <td>${coin.value}</td>
-                    <td>${coin.text}</td>
-                  `;
-                  tableBody.appendChild(row);
-                });
-              }
-              loading = false;
-            })
-            .catch(err => {
-              console.error(err);
-              loading = false;
+    function loadMoreData() {
+      if (loading || noMoreData) return;
+      loading = true;
+      currentPage++;
+      const url = "{{ url_for('get_coins') }}?page=" + currentPage +
+                  "&q=" + encodeURIComponent(q) +
+                  "&sort_by=" + encodeURIComponent(sortBy) +
+                  "&order=" + encodeURIComponent(order);
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (data.coins.length === 0) {
+            noMoreData = true;
+          } else {
+            data.coins.forEach(function(coin) {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>
+                  <a href="https://nreestr.ru/coins/search/${coin.number}" target="_blank">${coin.number}</a>
+                </td>
+                <td>
+                  <div class="img-container">
+                    <img class="thumbnail" src="/photos/${coin.number}r.jpg" alt="Revers">
+                    <div class="full-size">
+                      <img class="full" src="/photos/${coin.number}r.jpg" alt="Revers">
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="img-container">
+                    <img class="thumbnail" src="/photos/${coin.number}a.jpg" alt="Avers">
+                    <div class="full-size">
+                      <img class="full" src="/photos/${coin.number}a.jpg" alt="Avers">
+                    </div>
+                  </div>
+                </td>
+                <td>${coin.weight}</td>
+                <td>${coin.year}</td>
+                <td>${coin.condition}</td>
+                <td>${coin.value}</td>
+                <td>${coin.text}</td>
+              `;
+              tableBody.appendChild(row);
             });
-        }
-      });
+            // Если после добавления данных содержимое контейнера не заполнилось, загружаем ещё
+            if (tableContainer.scrollHeight <= tableContainer.clientHeight && !noMoreData) {
+              setTimeout(loadMoreData, 100);
+            }
+          }
+          loading = false;
+        })
+        .catch(err => {
+          console.error(err);
+          loading = false;
+        });
+    }
+
+    // Обработчик события прокрутки контейнера
+    tableContainer.addEventListener("scroll", function() {
+      if (loading || noMoreData) return;
+      if (tableContainer.scrollTop + tableContainer.clientHeight >= tableContainer.scrollHeight - 50) {
+        loadMoreData();
+      }
     });
-  </script>
-</body>
-</html>
+
+    // Если после начальной загрузки контент не заполнил контейнер, подгружаем дополнительно
+    if (tableContainer.scrollHeight <= tableContainer.clientHeight && !noMoreData) {
+      setTimeout(loadMoreData, 100);
+    }
+  });
+</script>
