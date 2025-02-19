@@ -68,7 +68,7 @@
 
 1. **Запуск через Docker**
     ```bash
-    docker run -d -p 5000:5000 --name coin_explorer aed5/nnr_coin_viewer
+    docker run -d -p 5000:5000 --name coin_explorer aed5/nnr_coins_viewer
 
 Приложение будет доступно по адресу: http://127.0.0.1:5000.
 
