@@ -53,8 +53,8 @@
 
 1. **Клонируйте репозиторий:**
    ```bash
-   git clone https://github.com/yourusername/coin-explorer.git
-   cd coin-explorer
+   git clone https://github.com/andreyevgenevichderbishev/nnr_coins_viewer.git
+   cd nnr_coins_viewer
 
 2. **Установите зависимости:**
    ```bash	
